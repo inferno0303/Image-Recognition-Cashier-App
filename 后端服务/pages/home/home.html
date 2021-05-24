@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <title>商品管理</title>
+    <script src="../../static/3rd_lib/mdui/js/mdui.min.js"></script>
+    <link href=/static/3rd_lib/mdui/css/mdui.min.css rel=stylesheet>
+    <script src="../../static/3rd_lib/vue/vue.min.js"></script>
+    <script src="../../static/3rd_lib/axios/axios.min.js"></script>
+    <script src="../../static/3rd_lib/qs/qs.min.js"></script>
+    <script src="../../static/3rd_lib/echarts/echarts.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="mdui-bottom-nav mdui-color-red">
+        <a href="javascript:window.location.href='/home';" class="mdui-ripple mdui-bottom-nav-active">
+            <i class="mdui-icon material-icons">&#xe8b8;</i>
+            <label>商品管理</label>
+        </a>
+        <a href="javascript:window.location.href='/service';" class="mdui-ripple">
+            <i class="mdui-icon material-icons">&#xe1b0;</i>
+            <label>服务测试</label>
+        </a>
+    </div>
+    <h1 style="text-align: center">在这里你能管理商品</h1>
+    <h2 style="text-align: center">{{ user_infos.username }}，欢迎回来</h2>
+    <div class="mdui-divider"></div>
+    <div>
+        <!--  用户信息
+        <div class="mdui-card mdui-ripple" style="width: 85%; margin: 10px auto 10px auto">
+            <div class="mdui-card-header">
+                <div class="mdui-card-header-title">用户信息</div>
+                <div class="mdui-card-header-subtitle">列表</div>
+            </div>
+            <div class="mdui-divider"></div>
+            <div class="mdui-card-primary">
+                <div style="font-size: 16px">用户名：{{ user_infos.username }}</div>
+                <div style="font-size: 14px">传感器数量：{{ user_infos.sensor_count }}</div>
+                <div>绑定邮箱：{{ user_infos.email }}</div>
+                <div>绑定手机：{{ user_infos.phone_number }}</div>
+                <div>最后登陆：{{ user_infos.last_login }}</div>
+            </div>
+        </div>
+        -->
+
+        <!--  价格表 -->
+        <div class="mdui-table-fluid" style="max-width: 85%; margin: 30px auto 30px auto">
+            <table class="mdui-table mdui-table-hoverable">
+                <thead>
+                <tr>
+                    <th>商品序号</th>
+                    <th>品牌</th>
+                    <th>商品名</th>
+                    <th>价格</th>
+                    <th>库存剩余</th>
+                    <th>别名</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="i in price_infos" @click="modi_price(i.id)">
+                    <td>{{ i.id }}</td>
+                    <td>{{ i.brand }}</td>
+                    <td>{{ i.good_name }}</td>
+                    <td>{{ i.price }}</td>
+                    <td>{{ i.count }}</td>
+                    <td>{{ i.other_name }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 修改信息 -->
+    <div class="mdui-divider"></div>
+    <div v-if="selected_good_info" style="max-width: 85%; margin: 20px auto 20px auto;">
+        <h2>修改信息，商品序列号{{ selected_good_info.id }}</h2>
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">修改品牌</label>
+            <input v-model="selected_good_info.brand" class="mdui-textfield-input" type="text" placeholder="品牌"/>
+        </div>
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">修改商品名</label>
+            <input v-model="selected_good_info.good_name" value="" class="mdui-textfield-input" type="text" placeholder="商品名"/>
+        </div>
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">修改价格</label>
+            <input v-model="selected_good_info.price" value="" class="mdui-textfield-input" type="text" placeholder="价格"/>
+        </div>
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">修改库存数</label>
+            <input v-model="selected_good_info.count" value="" class="mdui-textfield-input" type="text" placeholder="库存"/>
+        </div>
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">修改别名</label>
+            <input v-model="selected_good_info.other_name" value="" class="mdui-textfield-input" type="text" placeholder="别名"/>
+        </div>
+        <div style="text-align: center; margin: 20px auto 20px auto;">
+            <button @click="submit_modi_price" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-red" style="max-width: 40%;">确定修改</button>
+            <button @click="cancel_modi_price" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-red" style="max-width: 40%;">取消修改</button>
+        </div>
+    </div>
+
+
+    <!--  调试信息
+    <div style="max-width: 60%; text-align: center; display: block; margin: auto">
+        <div>{{ user_infos }}</div>
+        <div>{{ price_infos }}</div>
+        <div>{{ selected_good_info }}</div>
+    </div>-->
+</div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            login_status: null,
+            username: 'xxx',
+            password: '',
+            user_infos: '',
+            price_infos: [],
+            selected_good_info: undefined
+        },
+        methods: {
+            get_user_infos: function () {
+                _this = this;
+                axios.get('/home/get_user_infos')
+                    .then(function (resp) {
+                        if (resp.data.code === 0) {
+                            _this.user_infos = resp.data.msg;
+                        } else if (resp.data.code === -1) {
+                            alert(resp.data.msg.toString());
+                            window.location.href = '/login'
+                        } else if (resp.data.code === -200) {
+                            alert('服务器抛出异常')
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        alert('非200状态，网络超时')
+                    })
+            },
+            get_all_price: function () {
+                _this = this;
+                axios.get('/home/get_all_price')
+                    .then(function (resp) {
+                        console.log(resp.data);
+                        _this.price_infos = resp.data.msg;
+                        mdui.mutation()
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        alert('网络异常')
+                    })
+            },
+            modi_price: function (id) {
+                id = Number(id);
+                console.log('hello' + id.toString());
+                _this = this;
+                for (let i = 0; i < _this.price_infos.length; i++) {
+                    if (_this.price_infos[i].id === id) {
+                        _this.selected_good_info = _this.price_infos[i]
+                    }
+                }
+            },
+            submit_modi_price: function () {
+                if (!this.selected_good_info) {
+                    return
+                }
+                let data = Qs.stringify(this.selected_good_info);
+                axios({
+                    method: 'post',
+                    timeout: 5000,
+                    url: '/home/submit_modi_price',
+                    data: data
+                }).then(function (resp) {
+                    if (resp.data.code === 0) {
+                        alert('修改成功');
+                        // window.location.reload()
+                    }
+                    else if (resp.data.code === -200) {
+                        alert('服务器抛出异常')
+                    }
+                    else {
+                        alert('修改失败')
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+                    alert('网络错误')
+                });
+            },
+            cancel_modi_price: function () {
+                this.selected_good_info = undefined;
+            }
+        },
+        mounted: function () {
+            this.get_user_infos();
+            this.get_all_price()
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <title>服务测试</title>
+    <script src="../../static/3rd_lib/mdui/js/mdui.min.js"></script>
+    <link href=/static/3rd_lib/mdui/css/mdui.min.css rel=stylesheet>
+    <script src="../../static/3rd_lib/vue/vue.min.js"></script>
+    <script src="../../static/3rd_lib/axios/axios.min.js"></script>
+    <script src="../../static/3rd_lib/qs/qs.min.js"></script>
+    <script src="../../static/3rd_lib/echarts/echarts.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="mdui-bottom-nav mdui-color-red">
+        <a href="javascript:window.location.href='/home';" class="mdui-ripple">
+            <i class="mdui-icon material-icons">&#xe8b8;</i>
+            <label>商品管理</label>
+        </a>
+        <a href="javascript:window.location.href='/service';" class="mdui-ripple mdui-bottom-nav-active">
+            <i class="mdui-icon material-icons">&#xe1b0;</i>
+            <label>服务测试</label>
+        </a>
+    </div>
+
+    <div>
+        <h1 style="text-align: center">服务测试页</h1>
+        <h2 style="text-align: center">模拟客户端查询商品价格</h2>
+        <div class="mdui-divider"></div>
+    </div>
+
+
+    <div style="max-width: 85%; margin: 20px auto 20px auto;">
+        <div class="mdui-textfield">
+            <label style="font-style: italic;">输入商品名/别名：</label>
+            <input v-model="input_info" class="mdui-textfield-input" type="text"/>
+        </div>
+        <div style="display: block; margin: 20px auto 20px auto; text-align: center">
+            <button @click="query_price_info" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-red" style="max-width: 60%;">查询</button>
+        </div>
+        <div style="text-align: center; margin: 20px auto 20px auto;">
+        </div>
+    </div>
+
+    <div v-if="resp_info" style="margin: 20px auto 20px auto; max-width: 85%">
+        <div class="mdui-card">
+            <div class="mdui-ripple" style="color: #b71c1c; font-size: 24px; text-align: center; margin: 20px auto 20px auto;">查询结果</div>
+            <div class="mdui-divider"></div>
+            <ul class="mdui-list">
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe242;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品序号： {{ resp_info.id }}</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe06b;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品品牌： {{ resp_info.brand }}</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe547;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品名称： {{ resp_info.good_name }}</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe8a1;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品价格： {{ resp_info.price }}</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe543;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品库存： {{ resp_info.count }}</div>
+                </li>
+                <li class="mdui-list-item mdui-ripple">
+                    <i class="mdui-icon material-icons">&#xe88e;</i>
+                    <span style="width: 15%"></span>
+                    <div class="mdui-list-item-content">商品别名： {{ resp_info.other_name }}</div>
+                </li>
+            </ul>
+            <div style="display: block; margin: 20px auto 20px auto; text-align: center">
+                <button @click="cancel_card" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-red" style="max-width: 60%;">好的</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!--  调试信息 -->
+    <div>{{ resp_info }}</div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            infos: null,
+            input_info: '',
+            resp_info: undefined
+        },
+        methods: {
+            query_price_info: function () {
+                _this = this;
+                axios.get('/service/query_price_info' + '?keyword=' + this.input_info.toString())
+                    .then(function (resp) {
+                        console.log(resp.data);
+                        _this.resp_info = resp.data.msg;
+                        mdui.mutation()
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        alert('网络异常')
+                    })
+            },
+            cancel_card: function () {
+                this.resp_info = undefined;
+            }
+        },
+        mounted: function () {
+        }
+    })
+</script>
+</body>
+</html>
